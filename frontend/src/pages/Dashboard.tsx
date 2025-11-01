@@ -30,7 +30,28 @@ export default function Dashboard() {
       window.location.href = `/analysis?target=${target.id}`;
     } catch (err: any) {
       console.error('❌ Error creating target:', err);
-      setError(err.response?.data?.detail || 'Failed to create target. Please try again.');
+      console.error('Full error:', JSON.stringify(err, null, 2));
+      
+      // Extract detailed error message
+      let errorMessage = 'Failed to create target. Please try again.';
+      
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.message) {
+        if (err.message.includes('timeout') || err.message.includes('ECONNABORTED')) {
+          errorMessage = 'Request timed out. The website might be slow or unreachable. Please try again.';
+        } else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+          errorMessage = 'Cannot connect to server. Please check your internet connection and try again.';
+        } else {
+          errorMessage = err.message;
+        }
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error. Please check Railway logs or try again later.';
+      } else if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.detail || 'Invalid input. Please check your brand name and URL.';
+      }
+      
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime
 
+import httpx
 from fastapi import APIRouter, HTTPException
 
 from app.errors.http_errors import NotFoundError
@@ -49,9 +50,23 @@ async def init_target(request: InitTargetRequest) -> InitTargetResponse:
     except NotFoundError as e:
         logger.error(f"Not found error: {e}")
         raise HTTPException(status_code=404, detail=str(e))
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP error fetching website: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot access website: HTTP {e.response.status_code}. Please check the URL is correct and accessible."
+        )
+    except httpx.RequestError as e:
+        logger.error(f"Request error fetching website: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot reach website: {str(e)}. Please check the URL is correct and the website is online."
+        )
     except Exception as e:
         logger.error(f"Unexpected error initializing target: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to initialize target")
+        # Provide more specific error message if possible
+        error_detail = str(e) if str(e) else "Failed to initialize target"
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.get("/{target_id}", response_model=TargetResponse)
