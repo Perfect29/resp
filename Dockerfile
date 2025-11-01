@@ -17,14 +17,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ ./app/
 COPY .env* ./
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway will set PORT, but we expose common ports)
+EXPOSE 8000 8080
 
-# Health check - will use PORT if set
+# Health check - Railway uses PORT environment variable
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD sh -c "curl -f http://localhost:${PORT:-8000}/health || exit 1"
+    CMD sh -c "PORT=${PORT:-8080} && curl -f http://localhost:$PORT/health || exit 1"
 
 # Run application - Railway sets PORT environment variable
-# Use PORT if available, otherwise default to 8000
-CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# Use PORT if available, otherwise default to 8080 (Railway default)
+# Remove --reload for production, use workers for better performance
+CMD sh -c "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"
 
