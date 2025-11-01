@@ -9,13 +9,27 @@ import type {
   ApiError 
 } from '../types/api';
 
+// Get API URL from environment variable
+// In production, this MUST be set in Vercel environment variables
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Log API URL in development for debugging
+if (import.meta.env.DEV) {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
+
+// Warn if using localhost in production (means VITE_API_URL not set)
+if (import.meta.env.PROD && API_BASE_URL.includes('localhost')) {
+  console.error('⚠️ WARNING: VITE_API_URL is not set in production! Using localhost fallback.');
+  console.error('Please set VITE_API_URL environment variable in Vercel settings.');
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 seconds timeout
 });
 
 // Request interceptor for logging
