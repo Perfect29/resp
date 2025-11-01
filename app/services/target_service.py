@@ -46,8 +46,13 @@ class TargetService:
 
         # Fetch and extract content
         logger.info(f"Fetching content from {validated_url}")
-        html_content = await fetch_page_content(validated_url)
-        text_content = extract_text_from_html(html_content)
+        try:
+            html_content = await fetch_page_content(validated_url)
+            text_content = extract_text_from_html(html_content)
+        except Exception as e:
+            logger.error(f"Error fetching or extracting content: {e}", exc_info=True)
+            # Re-raise as ValueError to be handled by API endpoint
+            raise ValueError(f"Cannot fetch website content: {str(e)}. Please check the URL is accessible.") from e
 
         if not text_content or len(text_content) < 50:
             logger.warning("Extracted text content is too short, using fallback")
@@ -55,7 +60,20 @@ class TargetService:
 
         # Generate keywords
         logger.info("Generating keywords from content")
-        raw_keywords = await generate_keywords(text_content, count=5)
+        try:
+            raw_keywords = await generate_keywords(text_content, count=5)
+        except Exception as e:
+            logger.error(f"Error generating keywords: {e}", exc_info=True)
+            # Use fallback keywords if generation fails
+            raw_keywords = [
+                validated_name,
+                f"{validated_name} services",
+                f"{validated_name} solutions",
+                "business services",
+                "professional services",
+            ]
+            logger.warning(f"Using fallback keywords: {raw_keywords}")
+        
         sanitized_keywords = sanitize_keywords(raw_keywords)
 
         # Ensure we have exactly 5 keywords
@@ -66,7 +84,19 @@ class TargetService:
 
         # Build prompts
         logger.info("Building default prompts")
-        prompts = await build_default_prompts(validated_name, sanitized_keywords)
+        try:
+            prompts = await build_default_prompts(validated_name, sanitized_keywords)
+        except Exception as e:
+            logger.error(f"Error building prompts: {e}", exc_info=True)
+            # Use fallback prompts if generation fails
+            prompts = [
+                f"What are the best {sanitized_keywords[0] if sanitized_keywords else 'services'}?",
+                f"Top {sanitized_keywords[0] if sanitized_keywords else 'services'} recommendations",
+                f"Compare {sanitized_keywords[0] if sanitized_keywords else 'services'} options",
+                f"Which {sanitized_keywords[0] if sanitized_keywords else 'services'} should I choose?",
+                f"Best {sanitized_keywords[0] if sanitized_keywords else 'services'} alternatives",
+            ]
+            logger.warning(f"Using fallback prompts: {prompts}")
 
         # Create target in store
         target = store.create(
