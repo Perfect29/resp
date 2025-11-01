@@ -22,7 +22,7 @@ EXPOSE 8000 8080
 
 # Health check - Railway uses PORT environment variable
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD sh -c "PORT=${PORT:-8080} && curl -f http://localhost:$PORT/health || exit 1"
+    CMD sh -c "curl -f http://localhost:${PORT:-8080}/health || exit 1"
 
 # Run application - Railway sets PORT environment variable
 # Use PORT if available, otherwise default to 8080 (Railway default)
