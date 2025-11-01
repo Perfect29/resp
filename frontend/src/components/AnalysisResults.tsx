@@ -36,9 +36,10 @@ export default function AnalysisResults({ analysis }: AnalysisResultsProps) {
   const successRate = (score.occurrences / score.totalChecks) * 100;
   const avgRelevance = score.averageContextRelevance * 100;
 
-  // Prepare data for radial chart
+  // Prepare data for radial chart - need full 100% for the gauge effect
   const radialData = [
-    { name: 'Visibility', value: score.visibilityScore, fill: '#3b82f6' },
+    { name: 'Score', value: score.visibilityScore, fill: '#3b82f6' },
+    { name: 'Remaining', value: 100 - score.visibilityScore, fill: '#e5e7eb' },
   ];
 
   // Prepare data for metrics
@@ -96,12 +97,12 @@ export default function AnalysisResults({ analysis }: AnalysisResultsProps) {
           </div>
 
           {/* Radial Chart */}
-          <div>
+          <div className="relative">
             <ResponsiveContainer width="100%" height={300}>
               <RadialBarChart
                 cx="50%"
                 cy="50%"
-                innerRadius="60%"
+                innerRadius="70%"
                 outerRadius="90%"
                 data={radialData}
                 startAngle={90}
@@ -110,13 +111,26 @@ export default function AnalysisResults({ analysis }: AnalysisResultsProps) {
                 <RadialBar
                   dataKey="value"
                   cornerRadius={10}
-                  fill="#3b82f6"
+                  fill={(entry: any) => entry.fill}
                 />
                 <Tooltip 
-                  formatter={(value) => [`${value.toFixed(1)}/100`, 'Visibility Score']}
+                  formatter={(value: number) => {
+                    if (value === score.visibilityScore) {
+                      return [`${value.toFixed(1)}/100`, 'Visibility Score'];
+                    }
+                    return null;
+                  }}
+                  contentStyle={{ display: 'none' }}
                 />
               </RadialBarChart>
             </ResponsiveContainer>
+            {/* Center label */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">{score.visibilityScore.toFixed(0)}</div>
+                <div className="text-xs text-gray-500 mt-1">Score</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
