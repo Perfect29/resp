@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { targetsApi } from '../lib/api.js';
+import { targetsApi } from '../lib/api';
 import type { InitTargetRequest } from '../types/api';
 import LoadingSpinner from './LoadingSpinner';
 import { CheckCircle, AlertCircle } from 'lucide-react';
