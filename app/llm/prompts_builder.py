@@ -1,6 +1,7 @@
 """Prompt building utilities for visibility analysis with OpenAI integration."""
 
 import logging
+import re
 from typing import List
 
 from app.config import settings
