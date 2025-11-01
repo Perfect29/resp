@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { targetsApi } from '../lib/api.ts';
+import { targetsApi } from '../lib/api.js';
 import type { Target } from '../types/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Search, Sparkles, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
