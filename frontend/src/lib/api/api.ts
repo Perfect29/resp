@@ -48,7 +48,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Response Error:', error.response?.data || error.message);
+    // Better error logging for timeout and network errors
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      console.error('⏱️ API Request Timeout:', error.config?.url);
+      console.error('This endpoint may take longer than expected. Please wait or try again.');
+    } else if (error.message === 'Network Error' || !error.response) {
+      console.error('🌐 Network Error:', error.message);
+      console.error('Unable to reach the server. Please check your connection.');
+    } else {
+      console.error('API Response Error:', error.response?.data || error.message);
+    }
     return Promise.reject(error);
   }
 );
@@ -79,8 +88,15 @@ export const targetsApi = {
   },
 
   // Analyze target visibility
+  // This endpoint can take 2-5 minutes (30 OpenAI API calls: 5 prompts × 6 checks)
   analyzeTarget: async (id: string): Promise<AnalyzeResponse> => {
-    const response: AxiosResponse<AnalyzeResponse> = await api.post(`/api/targets/${id}/analyze`);
+    const response: AxiosResponse<AnalyzeResponse> = await api.post(
+      `/api/targets/${id}/analyze`,
+      {},
+      {
+        timeout: 300000, // 5 minutes timeout for analysis (300 seconds)
+      }
+    );
     return response.data;
   },
 };

@@ -26,7 +26,8 @@ export default function AnalysisPage() {
       return result;
     },
     enabled: !!targetId,
-    retry: 2,
+    retry: 1, // Only retry once - analysis takes 2-5 minutes
+    retryDelay: 5000, // Wait 5 seconds before retry
   });
 
   if (!targetId) {
@@ -62,7 +63,11 @@ export default function AnalysisPage() {
           <p className="text-gray-600 text-lg">
             {targetLoading ? 'Loading your brand data...' : 'Analyzing visibility...'}
           </p>
-          <p className="text-gray-500 text-sm mt-2">This may take a few moments</p>
+          <p className="text-gray-500 text-sm mt-2">
+            {targetLoading 
+              ? 'Loading...' 
+              : 'This process takes 2-5 minutes (30 AI checks). Please don\'t close this page.'}
+          </p>
         </div>
       </div>
     );
@@ -76,9 +81,18 @@ export default function AnalysisPage() {
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Analysis Failed</h3>
-          <p className="text-gray-600 mb-6">
-            {targetError ? 'Failed to load brand data' : 'Failed to run analysis'}
+          <p className="text-gray-600 mb-4">
+            {targetError 
+              ? 'Failed to load brand data' 
+              : analysisError?.message?.includes('timeout')
+              ? 'Analysis timed out. This process takes 2-5 minutes. Please try again.'
+              : 'Failed to run analysis. Please check your connection and try again.'}
           </p>
+          {analysisError && (
+            <p className="text-gray-500 text-sm mb-6 font-mono">
+              {String(analysisError)}
+            </p>
+          )}
           <button
             onClick={() => navigate('/')}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:shadow-lg transition-all"
