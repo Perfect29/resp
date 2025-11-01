@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { targetsApi } from '../lib/api';
+import { targetsApi } from '../lib/api.ts';
 import AnalysisResults from '../components/AnalysisResults';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ArrowLeft, AlertCircle, Sparkles } from 'lucide-react';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Target, UpdateKeywordsRequest, UpdatePromptsRequest } from '../types/api';
-import { targetsApi } from '../lib/api';
+import { targetsApi } from '../lib/api.ts';
 import { 
   Edit3, 
   Trash2, 
