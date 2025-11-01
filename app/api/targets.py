@@ -50,18 +50,11 @@ async def init_target(request: InitTargetRequest) -> InitTargetResponse:
     except NotFoundError as e:
         logger.error(f"Not found error: {e}")
         raise HTTPException(status_code=404, detail=str(e))
-    except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP error fetching website: {e}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot access website: HTTP {e.response.status_code}. Please check the URL is correct and accessible."
-        )
-    except httpx.RequestError as e:
-        logger.error(f"Request error fetching website: {e}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot reach website: {str(e)}. Please check the URL is correct and the website is online."
-        )
+    except ValueError as e:
+        # ValueError from fetch_page_content or other validation
+        # These are user-friendly error messages already
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Unexpected error initializing target: {e}", exc_info=True)
         # Provide more specific error message if possible
